@@ -5,6 +5,7 @@ import { Download, Loader2, RotateCcw, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CampaignViewer } from "@/components/CampaignViewer/CampaignViewer";
+import { QualityPanel } from "@/components/CampaignViewer/QualityPanel";
 import { useWizardStore } from "@/lib/store/wizardStore";
 
 export function StepOutput() {
@@ -22,7 +23,17 @@ export function StepOutput() {
     );
   }
 
+  // Regra de negócio (PRD §14.3): só exporta com score de qualidade >= 70.
+  const blockedByQuality =
+    campaign.quality != null && campaign.quality.score < 70;
+
   const exportDocx = async () => {
+    if (blockedByQuality) {
+      setError(
+        `Exportação bloqueada: score de qualidade ${campaign.quality?.score}/100 (mínimo 70). Corrija os alertas e regenere a campanha.`
+      );
+      return;
+    }
     setExporting(true);
     setError(null);
     try {
@@ -61,7 +72,15 @@ export function StepOutput() {
           <Button variant="ghost" size="sm" onClick={reset}>
             <RotateCcw className="h-4 w-4" /> Nova campanha
           </Button>
-          <Button onClick={exportDocx} disabled={exporting}>
+          <Button
+            onClick={exportDocx}
+            disabled={exporting || blockedByQuality}
+            title={
+              blockedByQuality
+                ? "Score de qualidade abaixo de 70"
+                : undefined
+            }
+          >
             {exporting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -77,6 +96,8 @@ export function StepOutput() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {campaign.quality && <QualityPanel quality={campaign.quality} />}
 
       <CampaignViewer campaign={campaign} />
     </div>

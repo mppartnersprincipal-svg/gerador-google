@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useWizardStore } from "@/lib/store/wizardStore";
 import type { OrganizedGroup } from "@/lib/agents/keywordOrganizer";
-import type { AdGroup, Campaign, RSAd } from "@/types/campaign";
+import type {
+  AdGroup,
+  Campaign,
+  CampaignExtensions,
+  QualityReview,
+  RSAd,
+} from "@/types/campaign";
 
 type Stage = { label: string; status: "pending" | "active" | "done" };
 
@@ -29,6 +35,8 @@ export function StepGenerating() {
   const [stages, setStages] = useState<Stage[]>([
     { label: "Organizando grupos de anúncio…", status: "pending" },
     { label: "Gerando anúncios (RSA)…", status: "pending" },
+    { label: "Criando extensões…", status: "pending" },
+    { label: "Revisando qualidade…", status: "pending" },
   ]);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -38,30 +46,24 @@ export function StepGenerating() {
     if (startedRef.current) return;
     startedRef.current = true;
 
+    const setStage = (index: number, status: Stage["status"]) =>
+      setStages((s) => s.map((st, i) => (i === index ? { ...st, status } : st)));
+
     (async () => {
       if (!onboarding || !siteAnalysis) return;
       try {
         // Etapa 1 — organizar grupos
-        setStages((s) =>
-          s.map((st, i) => (i === 0 ? { ...st, status: "active" } : st))
-        );
+        setStage(0, "active");
         const { groups } = await postJson<{ groups: OrganizedGroup[] }>(
           "/api/organize-groups",
           { keywords, onboarding, analysis: siteAnalysis }
         );
         if (!groups.length) throw new Error("Nenhum grupo foi gerado.");
-        setStages((s) =>
-          s.map((st, i) =>
-            i === 0
-              ? { ...st, status: "done" }
-              : i === 1
-                ? { ...st, status: "active" }
-                : st
-          )
-        );
-        setProgress(30);
+        setStage(0, "done");
+        setProgress(20);
 
         // Etapa 2 — gerar RSA por grupo
+        setStage(1, "active");
         const adGroups: AdGroup[] = [];
         for (let i = 0; i < groups.length; i++) {
           const group = groups[i];
@@ -76,10 +78,39 @@ export function StepGenerating() {
             keywords: group.keywords,
             ads: [ad],
           });
-          setProgress(30 + Math.round(((i + 1) / groups.length) * 70));
+          setProgress(20 + Math.round(((i + 1) / groups.length) * 45));
         }
+        setStage(1, "done");
 
-        setStages((s) => s.map((st) => ({ ...st, status: "done" })));
+        // Etapa 3 — extensões (não-fatal: não descarta os RSAs já gerados)
+        setStage(2, "active");
+        let extensions: CampaignExtensions | undefined;
+        try {
+          const res = await postJson<{ extensions: CampaignExtensions }>(
+            "/api/generate-extensions",
+            onboarding
+          );
+          extensions = res.extensions;
+        } catch {
+          extensions = undefined;
+        }
+        setStage(2, "done");
+        setProgress(85);
+
+        // Etapa 4 — revisão de qualidade (não-fatal)
+        setStage(3, "active");
+        let quality: QualityReview | undefined;
+        try {
+          const res = await postJson<{ quality: QualityReview }>(
+            "/api/review-campaign",
+            { adGroups, extensions }
+          );
+          quality = res.quality;
+        } catch {
+          quality = undefined;
+        }
+        setStage(3, "done");
+        setProgress(100);
 
         const campaign: Campaign = {
           id: `camp-${Date.now()}`,
@@ -89,6 +120,8 @@ export function StepGenerating() {
           siteAnalysis,
           seoTips: siteAnalysis.seo_audit,
           adGroups,
+          extensions,
+          quality,
         };
         setCampaign(campaign);
         setTimeout(() => goTo(5), 400);

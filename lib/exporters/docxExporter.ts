@@ -120,6 +120,14 @@ export async function buildCampaignDocx(campaign: Campaign): Promise<Buffer> {
   children.push(p(siteAnalysis.publico_alvo));
   children.push(p(`Total de keywords: ${totalKeywords}`));
   children.push(p(`Grupos de anúncio criados: ${adGroups.length}`));
+  if (campaign.quality) {
+    children.push(
+      p(
+        `Score de qualidade: ${campaign.quality.score}/100 ${campaign.quality.aprovado ? "(aprovado)" : "(revisar)"}`,
+        { bold: true }
+      )
+    );
+  }
 
   // ---- Seção 2: SEO On-Page ----
   children.push(heading("2. Dicas de SEO On-Page", HeadingLevel.HEADING_1));
@@ -191,6 +199,47 @@ export async function buildCampaignDocx(campaign: Campaign): Promise<Buffer> {
       }
     });
   });
+
+  // ---- Seção 4: Extensões ----
+  if (campaign.extensions) {
+    const ext = campaign.extensions;
+    children.push(heading("4. Extensões", HeadingLevel.HEADING_1));
+
+    if (ext.callouts.length) {
+      children.push(p("Frases de Destaque (Callouts):", { bold: true }));
+      children.push(
+        table(
+          ["Callout", "Chars"],
+          ext.callouts.map((c) => [c, String(c.length)])
+        )
+      );
+    }
+
+    if (ext.sitelinks.length) {
+      children.push(p("Sitelinks:", { bold: true }));
+      children.push(
+        table(
+          ["Título", "Linha 1", "Linha 2", "URL sugerida"],
+          ext.sitelinks.map((s) => [
+            s.title,
+            s.description1,
+            s.description2,
+            s.suggestedUrl,
+          ])
+        )
+      );
+    }
+
+    if (ext.structuredSnippets.length) {
+      children.push(p("Snippets Estruturados:", { bold: true }));
+      children.push(
+        table(
+          ["Cabeçalho", "Valores"],
+          ext.structuredSnippets.map((s) => [s.header, s.values.join(", ")])
+        )
+      );
+    }
+  }
 
   // ---- Rodapé ----
   children.push(

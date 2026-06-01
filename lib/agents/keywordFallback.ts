@@ -49,20 +49,31 @@ ANÁLISE SEMÂNTICA DO SITE:
 
 Pesquise os termos mais buscados relacionados e gere a lista estimada.`;
 
-  const response = await anthropic.messages.create({
+  const baseParams = {
     model: CLAUDE_MODEL,
     max_tokens: 3000,
     temperature: 0.6,
     system: SYSTEM,
-    tools: [
-      {
-        type: "web_search_20250305",
-        name: "web_search",
-        max_uses: 5,
-      } as unknown as Anthropic.Tool,
-    ],
-    messages: [{ role: "user", content: user }],
-  });
+    messages: [{ role: "user" as const, content: user }],
+  };
+
+  let response;
+  try {
+    // Tenta com busca na web (dados mais realistas)
+    response = await anthropic.messages.create({
+      ...baseParams,
+      tools: [
+        {
+          type: "web_search_20250305",
+          name: "web_search",
+          max_uses: 5,
+        } as unknown as Anthropic.Tool,
+      ],
+    });
+  } catch {
+    // Conta sem web search habilitado: degrada para geração sem ferramenta
+    response = await anthropic.messages.create(baseParams);
+  }
 
   const text = response.content
     .filter((b): b is Anthropic.TextBlock => b.type === "text")

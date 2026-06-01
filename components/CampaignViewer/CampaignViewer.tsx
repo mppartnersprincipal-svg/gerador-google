@@ -4,6 +4,7 @@ import { Settings, Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AdGroupCard } from "./AdGroupCard";
+import { ExtensionsSection } from "./ExtensionsSection";
 import { OBJECTIVE_LABELS, RADIUS_LABELS } from "@/types/onboarding";
 import type { Campaign } from "@/types/campaign";
 
@@ -46,6 +47,10 @@ export function CampaignViewer({ campaign }: { campaign: Campaign }) {
       {adGroups.map((group, i) => (
         <AdGroupCard key={group.id} group={group} index={i} />
       ))}
+
+      {campaign.extensions && (
+        <ExtensionsSection extensions={campaign.extensions} />
+      )}
     </div>
   );
 }

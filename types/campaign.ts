@@ -40,6 +40,19 @@ export interface CampaignExtensions {
   structuredSnippets: StructuredSnippet[];
 }
 
+export interface QualityAlert {
+  tipo: "erro" | "alerta" | "info";
+  campo: string;
+  mensagem: string;
+  sugestao: string;
+}
+
+export interface QualityReview {
+  aprovado: boolean;
+  score: number; // 0–100
+  alertas: QualityAlert[];
+}
+
 export interface Campaign {
   id: string;
   clientName: string;
@@ -48,6 +61,6 @@ export interface Campaign {
   siteAnalysis: SiteAnalysis;
   seoTips: SEOTip[];
   adGroups: AdGroup[];
-  extensions?: CampaignExtensions; // Agente 4 — próximo ciclo
-  qualityScore?: number; // Agente 5 — próximo ciclo
+  extensions?: CampaignExtensions; // Agente 4
+  quality?: QualityReview; // Agente 5
 }
