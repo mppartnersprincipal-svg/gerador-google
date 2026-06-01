@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AdGroupCard } from "./AdGroupCard";
 import { ExtensionsSection } from "./ExtensionsSection";
+import { PMaxSection } from "./PMaxSection";
 import { OBJECTIVE_LABELS, RADIUS_LABELS } from "@/types/onboarding";
 import type { Campaign } from "@/types/campaign";
 
@@ -51,6 +52,8 @@ export function CampaignViewer({ campaign }: { campaign: Campaign }) {
       {campaign.extensions && (
         <ExtensionsSection extensions={campaign.extensions} />
       )}
+
+      {campaign.pmax && <PMaxSection pmax={campaign.pmax} />}
     </div>
   );
 }

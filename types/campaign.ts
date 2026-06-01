@@ -40,6 +40,15 @@ export interface CampaignExtensions {
   structuredSnippets: StructuredSnippet[];
 }
 
+export interface PMaxAssetGroup {
+  shortHeadlines: string[]; // ≤30 chars
+  longHeadlines: string[]; // ≤90 chars
+  descriptions: string[]; // ≤90 chars
+  businessName: string; // ≤25 chars
+  audienceSignal: string; // texto livre — sinal de público
+  finalUrl: string;
+}
+
 export interface QualityAlert {
   tipo: "erro" | "alerta" | "info";
   campo: string;
@@ -63,4 +72,5 @@ export interface Campaign {
   adGroups: AdGroup[];
   extensions?: CampaignExtensions; // Agente 4
   quality?: QualityReview; // Agente 5
+  pmax?: PMaxAssetGroup; // Fase 3 — Performance Max (sob demanda)
 }

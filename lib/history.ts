@@ -61,6 +61,10 @@ export function getCampaign(id: string): Campaign | null {
   return read().find((c) => c.id === id) ?? null;
 }
 
+export function getAllCampaigns(): Campaign[] {
+  return read();
+}
+
 export function deleteCampaign(id: string): void {
   write(read().filter((c) => c.id !== id));
 }

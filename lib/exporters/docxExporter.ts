@@ -241,6 +241,37 @@ export async function buildCampaignDocx(campaign: Campaign): Promise<Buffer> {
     }
   }
 
+  // ---- Seção 5: Performance Max ----
+  if (campaign.pmax) {
+    const pm = campaign.pmax;
+    children.push(heading("5. Performance Max", HeadingLevel.HEADING_1));
+    children.push(p(`Nome do anunciante: ${pm.businessName}`));
+    children.push(p(`URL final: ${pm.finalUrl}`, { color: GRAY }));
+    children.push(p("Títulos curtos:", { bold: true }));
+    children.push(
+      table(
+        ["#", "Título curto", "Chars"],
+        pm.shortHeadlines.map((h, i) => [String(i + 1), h, String(h.length)])
+      )
+    );
+    children.push(p("Títulos longos:", { bold: true }));
+    children.push(
+      table(
+        ["#", "Título longo", "Chars"],
+        pm.longHeadlines.map((h, i) => [String(i + 1), h, String(h.length)])
+      )
+    );
+    children.push(p("Descrições:", { bold: true }));
+    children.push(
+      table(
+        ["#", "Descrição", "Chars"],
+        pm.descriptions.map((d, i) => [String(i + 1), d, String(d.length)])
+      )
+    );
+    children.push(p("Sinal de público:", { bold: true }));
+    children.push(p(pm.audienceSignal, { color: GRAY }));
+  }
+
   // ---- Rodapé ----
   children.push(
     new Paragraph({

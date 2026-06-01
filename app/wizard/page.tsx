@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, Clock, Settings } from "lucide-react";
+import { useRef, useState } from "react";
+import { Sparkles, Clock, Settings, BarChart3, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWizardStore } from "@/lib/store/wizardStore";
 import { StepIndicator } from "@/components/shared/StepIndicator";
@@ -13,12 +13,36 @@ import { StepGenerating } from "./components/StepGenerating";
 import { StepOutput } from "./components/StepOutput";
 import { HistoryPanel } from "./components/HistoryPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { DashboardPanel } from "./components/DashboardPanel";
+import { parseCampaignJson } from "@/lib/campaignIO";
+import { saveCampaign } from "@/lib/history";
 
-type View = "wizard" | "history" | "settings";
+type View = "wizard" | "history" | "settings" | "dashboard";
 
 export default function WizardPage() {
   const currentStep = useWizardStore((s) => s.currentStep);
+  const setCampaign = useWizardStore((s) => s.setCampaign);
+  const goTo = useWizardStore((s) => s.goTo);
   const [view, setView] = useState<View>("wizard");
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite reimportar o mesmo arquivo
+    if (!file) return;
+    setImportError(null);
+    try {
+      const text = await file.text();
+      const campaign = parseCampaignJson(text);
+      setCampaign(campaign);
+      saveCampaign(campaign);
+      setView("wizard");
+      goTo(5);
+    } catch (err) {
+      setImportError((err as Error).message);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -38,6 +62,28 @@ export default function WizardPage() {
             </div>
           </button>
           <div className="flex items-center gap-1">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={onImportFile}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fileRef.current?.click()}
+              title="Importar campanha (.json) para otimizar"
+            >
+              <Upload className="h-4 w-4" /> Importar
+            </Button>
+            <Button
+              variant={view === "dashboard" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setView("dashboard")}
+            >
+              <BarChart3 className="h-4 w-4" /> Dashboard
+            </Button>
             <Button
               variant={view === "history" ? "secondary" : "ghost"}
               size="sm"
@@ -58,6 +104,14 @@ export default function WizardPage() {
       </header>
 
       <div className="mx-auto max-w-5xl px-4 py-6">
+        {importError && (
+          <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            Falha ao importar: {importError}
+          </div>
+        )}
+        {view === "dashboard" && (
+          <DashboardPanel onClose={() => setView("wizard")} />
+        )}
         {view === "history" && (
           <HistoryPanel onClose={() => setView("wizard")} />
         )}

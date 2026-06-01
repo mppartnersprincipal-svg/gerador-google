@@ -19,6 +19,17 @@ export const GOOGLE_ADS_LIMITS = {
   GROUPS_MAX: 8,
 } as const;
 
+/** Limites de Performance Max (asset group). */
+export const PMAX_LIMITS = {
+  SHORT_HEADLINE_MAX_CHARS: 30,
+  SHORT_HEADLINES: 5,
+  LONG_HEADLINE_MAX_CHARS: 90,
+  LONG_HEADLINES: 5,
+  DESCRIPTION_MAX_CHARS: 90,
+  DESCRIPTIONS: 5,
+  BUSINESS_NAME_MAX_CHARS: 25,
+} as const;
+
 /** Palavras/expressões proibidas em anúncios Google Ads (lista base, PT-BR). */
 export const FORBIDDEN_WORDS = [
   "grátis",
