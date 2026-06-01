@@ -23,6 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useWizardStore } from "@/lib/store/wizardStore";
+import { usePrefsStore } from "@/lib/store/prefsStore";
+import { CostEstimateCard } from "@/components/shared/CostEstimateCard";
 import { MATCH_TYPE_LABELS, type Keyword } from "@/types/keywords";
 
 function competitionLabel(c?: number): { label: string; variant: "secondary" | "warning" | "destructive" } {
@@ -43,6 +45,7 @@ export function StepKeywords() {
     next,
     back,
   } = useWizardStore();
+  const minVolume = usePrefsStore((s) => s.minVolume);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +57,7 @@ export function StepKeywords() {
       const res = await fetch("/api/research-keywords", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ onboarding, analysis: siteAnalysis }),
+        body: JSON.stringify({ onboarding, analysis: siteAnalysis, minVolume }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Falha na pesquisa.");
@@ -64,7 +67,7 @@ export function StepKeywords() {
     } finally {
       setLoading(false);
     }
-  }, [onboarding, siteAnalysis, setKeywords]);
+  }, [onboarding, siteAnalysis, setKeywords, minVolume]);
 
   useEffect(() => {
     if (keywords.length === 0 && !loading && !error) runResearch();
@@ -120,6 +123,13 @@ export function StepKeywords() {
             busca.
           </AlertDescription>
         </Alert>
+      )}
+
+      {onboarding && (
+        <CostEstimateCard
+          keywords={keywords.filter((k) => k.selected)}
+          monthlyBudget={onboarding.monthlyBudget}
+        />
       )}
 
       <Card>

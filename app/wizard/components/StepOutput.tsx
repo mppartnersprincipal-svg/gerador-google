@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CampaignViewer } from "@/components/CampaignViewer/CampaignViewer";
 import { QualityPanel } from "@/components/CampaignViewer/QualityPanel";
+import { CostEstimateCard } from "@/components/shared/CostEstimateCard";
 import { useWizardStore } from "@/lib/store/wizardStore";
 
 export function StepOutput() {
@@ -96,6 +97,11 @@ export function StepOutput() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      <CostEstimateCard
+        keywords={campaign.adGroups.flatMap((g) => g.keywords)}
+        monthlyBudget={campaign.onboarding.monthlyBudget}
+      />
 
       {campaign.quality && <QualityPanel quality={campaign.quality} />}
 

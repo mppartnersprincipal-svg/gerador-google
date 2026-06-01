@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useWizardStore } from "@/lib/store/wizardStore";
+import { saveCampaign } from "@/lib/history";
 import type { OrganizedGroup } from "@/lib/agents/keywordOrganizer";
 import type {
   AdGroup,
@@ -124,6 +125,7 @@ export function StepGenerating() {
           quality,
         };
         setCampaign(campaign);
+        saveCampaign(campaign);
         setTimeout(() => goTo(5), 400);
       } catch (e) {
         setError((e as Error).message);

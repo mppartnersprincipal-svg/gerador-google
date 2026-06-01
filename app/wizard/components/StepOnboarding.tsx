@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWizardStore } from "@/lib/store/wizardStore";
+import { usePrefsStore } from "@/lib/store/prefsStore";
 import {
   OBJECTIVE_LABELS,
   RADIUS_LABELS,
@@ -71,6 +72,7 @@ function Field({
 
 export function StepOnboarding() {
   const { onboarding, setOnboarding, next } = useWizardStore();
+  const defaultRadius = usePrefsStore((s) => s.defaultRadius);
 
   const {
     register,
@@ -81,7 +83,7 @@ export function StepOnboarding() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: onboarding ?? {
-      targetRadius: "city",
+      targetRadius: defaultRadius,
       campaignObjective: "leads_form",
     },
   });
