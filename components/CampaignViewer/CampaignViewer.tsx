@@ -7,11 +7,40 @@ import { AdGroupCard } from "./AdGroupCard";
 import { ExtensionsSection } from "./ExtensionsSection";
 import { PMaxSection } from "./PMaxSection";
 import { OBJECTIVE_LABELS, RADIUS_LABELS } from "@/types/onboarding";
-import type { Campaign } from "@/types/campaign";
+import type {
+  Campaign,
+  RSAd,
+  CampaignExtensions,
+  PMaxAssetGroup,
+} from "@/types/campaign";
 
-export function CampaignViewer({ campaign }: { campaign: Campaign }) {
+/**
+ * Bundle de edição (Fase 4 — F13/F14). Quando ausente, o viewer é read-only
+ * (uso no histórico/dashboard permanece inalterado). Quando presente, ativa
+ * edição inline com contadores ao vivo e botões de regeneração parcial.
+ */
+export interface CampaignEdit {
+  onAdChange: (groupIndex: number, adIndex: number, ad: RSAd) => void;
+  onRegenerateGroup: (groupIndex: number) => void;
+  regeneratingGroupIndex: number | null;
+  onExtensionsChange: (ext: CampaignExtensions) => void;
+  onRegenerateExtensions: () => void;
+  regeneratingExtensions: boolean;
+  onPMaxChange: (pmax: PMaxAssetGroup) => void;
+  onRegeneratePMax: () => void;
+  regeneratingPMax: boolean;
+}
+
+export function CampaignViewer({
+  campaign,
+  edit,
+}: {
+  campaign: Campaign;
+  edit?: CampaignEdit;
+}) {
   const { onboarding, adGroups } = campaign;
   const totalKeywords = adGroups.reduce((n, g) => n + g.keywords.length, 0);
+  const editable = !!edit;
 
   return (
     <div className="space-y-4">
@@ -28,10 +57,7 @@ export function CampaignViewer({ campaign }: { campaign: Campaign }) {
             <Badge variant="secondary">{totalKeywords} keywords</Badge>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Config
-              label="Tipo"
-              value="Rede de Pesquisa"
-            />
+            <Config label="Tipo" value="Rede de Pesquisa" />
             <Config
               label="Objetivo"
               value={OBJECTIVE_LABELS[onboarding.campaignObjective]}
@@ -46,14 +72,38 @@ export function CampaignViewer({ campaign }: { campaign: Campaign }) {
       </Card>
 
       {adGroups.map((group, i) => (
-        <AdGroupCard key={group.id} group={group} index={i} />
+        <AdGroupCard
+          key={group.id}
+          group={group}
+          index={i}
+          editable={editable}
+          onAdChange={
+            edit ? (adIndex, ad) => edit.onAdChange(i, adIndex, ad) : undefined
+          }
+          onRegenerate={edit ? () => edit.onRegenerateGroup(i) : undefined}
+          regenerating={edit?.regeneratingGroupIndex === i}
+        />
       ))}
 
       {campaign.extensions && (
-        <ExtensionsSection extensions={campaign.extensions} />
+        <ExtensionsSection
+          extensions={campaign.extensions}
+          editable={editable}
+          onChange={edit?.onExtensionsChange}
+          onRegenerate={edit?.onRegenerateExtensions}
+          regenerating={edit?.regeneratingExtensions}
+        />
       )}
 
-      {campaign.pmax && <PMaxSection pmax={campaign.pmax} />}
+      {campaign.pmax && (
+        <PMaxSection
+          pmax={campaign.pmax}
+          editable={editable}
+          onChange={edit?.onPMaxChange}
+          onRegenerate={edit?.onRegeneratePMax}
+          regenerating={edit?.regeneratingPMax}
+        />
+      )}
     </div>
   );
 }
