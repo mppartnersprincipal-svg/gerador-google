@@ -2,6 +2,7 @@
 
 import { Megaphone } from "lucide-react";
 import { CharCounter } from "@/components/shared/CharCounter";
+import { CopyButton } from "@/components/shared/CopyButton";
 import { EditableLine } from "@/components/shared/EditableLine";
 import { GOOGLE_ADS_LIMITS } from "@/lib/constants/limits";
 import type { RSAd } from "@/types/campaign";
@@ -50,9 +51,15 @@ export function AdCard({
         Anúncio RSA {index + 1}
       </div>
 
-      <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-        Títulos ({ad.headlines.length})
-      </p>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase text-muted-foreground">
+          Títulos ({ad.headlines.length})
+        </p>
+        <CopyButton
+          getText={() => ad.headlines.join("\n")}
+          label="Copiar títulos"
+        />
+      </div>
       <ul className="mb-4 space-y-1">
         {ad.headlines.map((h, i) =>
           editable ? (
@@ -82,9 +89,15 @@ export function AdCard({
         )}
       </ul>
 
-      <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-        Descrições ({ad.descriptions.length})
-      </p>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase text-muted-foreground">
+          Descrições ({ad.descriptions.length})
+        </p>
+        <CopyButton
+          getText={() => ad.descriptions.join("\n")}
+          label="Copiar descrições"
+        />
+      </div>
       <ul className="mb-4 space-y-1">
         {ad.descriptions.map((d, i) =>
           editable ? (

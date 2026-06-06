@@ -6,7 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KeywordsTable } from "./KeywordsTable";
 import { AdCard } from "./AdCard";
+import { CopyButton } from "@/components/shared/CopyButton";
 import type { AdGroup, RSAd } from "@/types/campaign";
+import type { Keyword } from "@/types/keywords";
+
+/** Formata as keywords no padrão de match type do Google Ads, uma por linha. */
+function formatKeywordsForCopy(keywords: Keyword[]): string {
+  return keywords
+    .map((k) =>
+      k.matchType === "exact"
+        ? `[${k.term}]`
+        : k.matchType === "phrase"
+          ? `"${k.term}"`
+          : k.term
+    )
+    .join("\n");
+}
 
 export function AdGroupCard({
   group,
@@ -55,7 +70,13 @@ export function AdGroupCard({
           <p className="text-sm text-muted-foreground">{group.theme}</p>
         )}
         <div>
-          <p className="mb-2 text-sm font-semibold">Palavras-chave</p>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold">Palavras-chave</p>
+            <CopyButton
+              getText={() => formatKeywordsForCopy(group.keywords)}
+              label="Copiar keywords"
+            />
+          </div>
           <div className="rounded-md border border-border">
             <KeywordsTable keywords={group.keywords} />
           </div>
