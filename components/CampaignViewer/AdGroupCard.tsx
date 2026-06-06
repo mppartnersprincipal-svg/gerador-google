@@ -7,21 +7,8 @@ import { Button } from "@/components/ui/button";
 import { KeywordsTable } from "./KeywordsTable";
 import { AdCard } from "./AdCard";
 import { CopyButton } from "@/components/shared/CopyButton";
+import { formatKeywordsForCopy } from "@/lib/keywordsFormat";
 import type { AdGroup, RSAd } from "@/types/campaign";
-import type { Keyword } from "@/types/keywords";
-
-/** Formata as keywords no padrão de match type do Google Ads, uma por linha. */
-function formatKeywordsForCopy(keywords: Keyword[]): string {
-  return keywords
-    .map((k) =>
-      k.matchType === "exact"
-        ? `[${k.term}]`
-        : k.matchType === "phrase"
-          ? `"${k.term}"`
-          : k.term
-    )
-    .join("\n");
-}
 
 export function AdGroupCard({
   group,

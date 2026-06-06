@@ -25,6 +25,8 @@ import {
 import { useWizardStore } from "@/lib/store/wizardStore";
 import { usePrefsStore } from "@/lib/store/prefsStore";
 import { CostEstimateCard } from "@/components/shared/CostEstimateCard";
+import { CopyButton } from "@/components/shared/CopyButton";
+import { formatKeywordsForCopy } from "@/lib/keywordsFormat";
 import { MATCH_TYPE_LABELS, type Keyword } from "@/types/keywords";
 
 function competitionLabel(c?: number): { label: string; variant: "secondary" | "warning" | "destructive" } {
@@ -140,6 +142,13 @@ export function StepKeywords() {
             </p>
             <div className="flex items-center gap-3">
               <Badge>{selectedCount} selecionadas</Badge>
+              <CopyButton
+                getText={() => {
+                  const sel = keywords.filter((k) => k.selected);
+                  return formatKeywordsForCopy(sel.length ? sel : keywords);
+                }}
+                label="Copiar keywords"
+              />
               <Button variant="ghost" size="sm" onClick={runResearch}>
                 <RefreshCw className="h-4 w-4" /> Repesquisar
               </Button>
